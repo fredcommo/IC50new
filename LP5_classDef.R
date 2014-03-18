@@ -101,7 +101,7 @@ setMethod("plot", signature = "cellResp",
 #              })
             }
             
-            lines(newy ~ newx, col=lcol, lwd=2)#,...)
+            lines(newy ~ newx, col=lcol, lwd=4)#,...)
             if(object@LPweight != 0)
               Sub = sprintf("Weighted %s-P logistic regr. (DoseResp package, version v.1)", object@npars)
             else 
