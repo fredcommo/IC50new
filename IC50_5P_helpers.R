@@ -74,7 +74,6 @@
   else return((y-T0)/(Ctrl-T0))
 }
 .chooseSCE <- function(method){
-#  method <- match.arg(method)
   switch(method,
          sdw = {.sce <- .sdWeight},
          res = {.sce <- .wsqRes},
@@ -94,16 +93,16 @@
   return(PL)
 }
 .estimScal <- function(x, y){
-  bottom <- min(y); top <- max(y)
+  bottom <- min(y, na.rm=TRUE); top <- max(y, na.rm=TRUE)
   z <- (y - bottom)/(top - bottom)
-  z[z==0] <- 0.01; z[z==1] <- 0.99
+  z[z==0] <- 0.05; z[z==1] <- 0.95
   lz <- log(z/(1-z))
-  scal = coef(lm(lz ~ x))[2]
+  scal <- coef(lm(x ~ lz))[2]
   return(as.numeric(scal))
 }
 .initPars <- function(x, y, npars){
-  if(npars<4) bottom <- 0 else bottom = min(y)
-  if(npars<3) top <-1 else top = max(y)
+  if(npars<4) bottom <- 0 else bottom = min(y, na.rm=TRUE)
+  if(npars<3) top <-1 else top = max(y, na.rm=TRUE)
   xmid = (max(x)+min(x))/2
   scal <- .estimScal(x, y)
   return(c(bottom, top, xmid, scal, s=1))
@@ -176,16 +175,16 @@
   return(list(lo = lo, hi = hi))
 }
 .invModel <- function(pars, target){
-  if(any(target>=pars$top))
-    target[target>=pars$top] <- pars$top - abs(pars$top*.01)
-  if(any(target<pars$bottom))
-    target[target<=pars$bottom] <- pars$bottom + abs(pars$bottom*.01)
+#   if(any(target>=pars$top))
+#     target[target>=pars$top] <- pars$top - abs(pars$top*.01)
+#   if(any(target<pars$bottom))
+#     target[target<=pars$bottom] <- pars$bottom + abs(pars$bottom*.01)
   return(pars$xmid - 1/pars$scal*log10(((pars$top - pars$bottom)/(target - pars$bottom))^(1/pars$s)-1))
 }
 .estimateRange <- function(target, stdErr, pars, B){
   #  Ytarget = pars$bottom + (pars$top - pars$bottom)*target
   Xtarget = .invModel(pars, target)
-  if(is.na(Xtarget)) minD <- D <- maxD <- NA
+  if(is.na(Xtarget)) Dmin <- D <- Dmax <- NA
   else{
     Ytmp <- target + rnorm(B, 0, stdErr)
     if(any(Ytmp<=0)) Ytmp <- Ytmp[-Ytmp<=0]

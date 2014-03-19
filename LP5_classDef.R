@@ -45,7 +45,7 @@ setMethod("getYProp", "cellResp", function(object) return(object@yProp))
 setMethod("getFitValues", "cellResp", function(object) return(object@yFit))
 setMethod("getXcurve", "cellResp", function(object) return(object@xCurve))
 setMethod("getYcurve", "cellResp", function(object) return(object@yCurve))
-setMethod("getPar", "cellResp", function(object){return(object@pars)})
+setMethod("getPar", "cellResp", function(object){return(list(npar=object@npars, params=object@pars))})
 setMethod('getGoodness', 'cellResp', function(object) return(object@goodness))
 setMethod('getStdErr', 'cellResp', function(object) return(object@stdErr))
 setMethod('getEstimates', 'cellResp', function(object){
@@ -73,7 +73,7 @@ setMethod("plot", signature = "cellResp",
             
             if(!is.na(showTarget)){
               stdErr <- getStdErr(object)
-              estim <- .estimateRange(showTarget, stdErr, getPar(object), B)
+              estim <- .estimateRange(showTarget, stdErr, getPar(object)$params, B)
               legend1 <- sprintf("IC%d : %s%s", showTarget*100, format(estim[2], scientific=TRUE), unit)
               legend2 <- sprintf("[%s, %s]", format(estim[1], scientific=TRUE), format(estim[3], scientific=TRUE))
               legend('bottomleft', legend = c(legend1, legend2), cex = 1.5, text.col = 'steelblue4', bty = 'n')
