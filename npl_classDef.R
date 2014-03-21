@@ -1,5 +1,5 @@
 # # Define class
-setClass('cellResp', representation(x='vector',
+setClass('npl', representation(x='vector',
                                     y='vector',
                                     isLog='logical',
                                     yProp='vector',
@@ -17,10 +17,10 @@ setClass('cellResp', representation(x='vector',
                                     SCE='ANY'))
 
 # # Constructor
-cellResp = function(x=x, y=y, isLog=TRUE, yProp=NA, npars=0, LPweight=0, yFit=NA,
+.nplObj = function(x=x, y=y, isLog=TRUE, yProp=NA, npars=0, LPweight=0, yFit=NA,
                     xCurve=NA, yCurve=NA, goodness=0, stdErr=0, pars=data.frame(),
                     estimates=data.frame(), AUC=data.frame(), PL=NULL, SCE=NULL){
-  new('cellResp', x=x, y=y, isLog=isLog, yProp=yProp, npars=npars, LPweight=LPweight,
+  new('npl', x=x, y=y, isLog=isLog, yProp=yProp, npars=npars, LPweight=LPweight,
       yFit=yFit, xCurve=xCurve, yCurve=yCurve, goodness=goodness, stdErr=stdErr,
       pars=pars, estimates=estimates, AUC = AUC, PL=PL, SCE=SCE)
 }
@@ -37,24 +37,24 @@ setGeneric("getGoodness", function(object) standardGeneric("getGoodness"))
 setGeneric("getStdErr", function(object) standardGeneric("getStdErr"))
 setGeneric("getEstimates", function(object) standardGeneric("getEstimates"))
 setGeneric("getAUC", function(object) standardGeneric("getAUC"))
-#setGeneric("show", valueClass="cellResp", function(object) standardGeneric("show"))
+#setGeneric("show", valueClass="npl", function(object) standardGeneric("show"))
 
 # # Methods
-setMethod("getX", "cellResp", function(object) return(object@x))
-setMethod("getY", "cellResp", function(object) return(object@y))
-setMethod("getYProp", "cellResp", function(object) return(object@yProp))
-setMethod("getFitValues", "cellResp", function(object) return(object@yFit))
-setMethod("getXcurve", "cellResp", function(object) return(object@xCurve))
-setMethod("getYcurve", "cellResp", function(object) return(object@yCurve))
-setMethod("getPar", "cellResp", function(object){return(list(npar=object@npars, params=object@pars))})
-setMethod('getGoodness', 'cellResp', function(object) return(object@goodness))
-setMethod('getStdErr', 'cellResp', function(object) return(object@stdErr))
-setMethod('getEstimates', 'cellResp', function(object){
+setMethod("getX", "npl", function(object) return(object@x))
+setMethod("getY", "npl", function(object) return(object@y))
+setMethod("getYProp", "npl", function(object) return(object@yProp))
+setMethod("getFitValues", "npl", function(object) return(object@yFit))
+setMethod("getXcurve", "npl", function(object) return(object@xCurve))
+setMethod("getYcurve", "npl", function(object) return(object@yCurve))
+setMethod("getPar", "npl", function(object){return(list(npar=object@npars, params=object@pars))})
+setMethod('getGoodness', 'npl', function(object) return(object@goodness))
+setMethod('getStdErr', 'npl', function(object) return(object@stdErr))
+setMethod('getEstimates', 'npl', function(object){
   estim <- object@estimates
   return(estim[order(estim$Surv, decreasing = TRUE),])
   })
-setMethod("getAUC", "cellResp", function(object) return(object@AUC))
-setMethod("predict", "cellResp", function(object, target){
+setMethod("getAUC", "npl", function(object) return(object@AUC))
+setMethod("predict", "npl", function(object, target){
   if(target<0 | target>1)
     stop("The target value has to be between 0 and 1 (fraction of y)")
   pars <- getPar(object)
@@ -63,7 +63,7 @@ setMethod("predict", "cellResp", function(object, target){
   colnames(estim) <- c('xmin', 'x', 'xmax')
   return(estim)
 })
-setMethod("plot", signature = "cellResp",
+setMethod("plot", signature = "npl",
           function(object, x=NA, y=NA, pcol="aquamarine1", lcol="red3", cex=1.5,
                    showTarget=.5, showIC=TRUE, B=1e4, unit='',
                    Title=NA, xlab='Log10(Drug[c])', ylab='Survival',...){
@@ -109,9 +109,9 @@ setMethod("plot", signature = "cellResp",
           }
 )
 
-setMethod('show', 'cellResp',
+setMethod('show', 'npl',
           function(object){
-            cat("Instance of class cellResp\n")
+            cat("Instance of class npl\n")
             cat("\n")
             cat(sprintf("%s-P logistic model\n", object@npars))
             cat("Goodness of fit:", getGoodness(object), "\n")

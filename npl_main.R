@@ -12,7 +12,7 @@ Logistic <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, isLog=TRUE, LPweight=0.2
     x <- x[-NAs]
     y <- y[-NAs]
   }
-  object <- cellResp(x=x, y=y, isLog=isLog, LPweight=LPweight)
+  object <- .nplObj(x=x, y=y, isLog=isLog, LPweight=LPweight)
   
   if(!isProp){
     object@yProp <- .survProp(y, T0, Ctrl)
