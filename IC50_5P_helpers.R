@@ -121,10 +121,11 @@
   return(PL(pars[1], pars[2], pars[3], pars[4], pars[5], unique(x)))
 }
 .getPerf <- function(y, yfit){
-  test <- summary(lm(yfit ~ y))
-  fstat <- test$fstatistic
+#  y <- scale(y); yFit <- scale(yFit)
+  lmtest <- summary(lm(y ~ yfit))
+  fstat <- lmtest$fstatistic
   p <- pf(fstat[1], fstat[2], fstat[3], lower.tail=FALSE)
-  goodness <- test$adj.r.squared
+  goodness <- lmtest$adj.r.squared
   stdErr <- sqrt(1/(length(yfit)-2)*sum((yfit-y)^2))
   return(cbind.data.frame(goodness=goodness, stdErr=stdErr, p=p))
 }
@@ -167,9 +168,8 @@
 .IClm <- function(stdErr, yobs, yfit, newy){
   n <- length(yobs)
   ybar <- mean(yobs, na.rm = TRUE)
-  sb <- sqrt(1/(n-2)*sum(stdErr^2)/sum((yobs-ybar)^2))
   t <- qt(.975, n-2)
-  IC <- t*sqrt(1/(n-2)*sum(stdErr^2)*(1/n+(newy - ybar)^2/sum((newy - ybar)^2)))
+  IC <- t*stdErr*sqrt((1/n+(newy - ybar)^2/sum((newy - ybar)^2)))
   lo <- newy - IC
   hi <- newy + IC
   return(list(lo = lo, hi = hi))
@@ -181,8 +181,8 @@
 #     target[target<=pars$bottom] <- pars$bottom + abs(pars$bottom*.01)
   return(pars$xmid - 1/pars$scal*log10(((pars$top - pars$bottom)/(target - pars$bottom))^(1/pars$s)-1))
 }
-.estimateRange <- function(target, stdErr, pars, B){
-  #  Ytarget = pars$bottom + (pars$top - pars$bottom)*target
+.estimateRange <- function(target, stdErr, pars, B, isLog){
+  target <- pars$bottom + (pars$top - pars$bottom)*target
   Xtarget = .invModel(pars, target)
   if(is.na(Xtarget)) Dmin <- D <- Dmax <- NA
   else{
@@ -190,9 +190,10 @@
     if(any(Ytmp<=0)) Ytmp <- Ytmp[-Ytmp<=0]
     estimate <- .invModel(pars, Ytmp)
     Q <- quantile(estimate, probs=c(.025, .5, .975), na.rm=T)
-    Dmin <- signif(10^Q[1], 2)
-    D <- signif(10^Q[2], 2)
-    Dmax <- signif(10^Q[3], 2)
+    if(isLog) Q <- 10^Q
+    Dmin <- signif(Q[1], 2)
+    D <- signif(Q[2], 2)
+    Dmax <- signif(Q[3], 2)
   }
   return(as.numeric(c(Dmin, D, Dmax)))
 }

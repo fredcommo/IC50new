@@ -1,22 +1,19 @@
 
-model5P <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, sDev=NULL, LPweight=0.25,
+Logistic <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, isLog=TRUE, LPweight=0.25,
                     npars="all", method=c("res", "sdw", "Y2", "pw", "gw"),...){
   
   method <- match.arg(method)
   
-#   T0=NA; Ctrl=NA; isProp=TRUE; sDev=NULL; LPweight=0.25;
-#   npars="all"; method="res"
-  
   if(is.numeric(npars) & (npars<2 | npars>5))
     stop("\nThe number of parameters (npars) has to be in [2, 5]!\n
          Choose 'all' to test both.\n")
-  
+    
   if(any(is.na(x) | is.na(y))){
     NAs <- union(which(is.na(x)), which(is.na(y)))
     x <- x[-NAs]
     y <- y[-NAs]
   }
-  object <- cellResp(x=x, y=y, LPweight=LPweight)
+  object <- cellResp(x=x, y=y, isLog=isLog, LPweight=LPweight)
   
   if(!isProp){
     object@yProp <- .survProp(y, T0, Ctrl)
@@ -48,14 +45,11 @@ model5P <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, sDev=NULL, LPweight=0.25,
   newY <- PL(bottom, top, xmid, scal, s, newX)
   yFit <- PL(bottom, top, xmid, scal, s, x)
   perf <- .getPerf(y, yFit)
-
-#   plot(x, y)
-#   lines(newX, newY)
   
   # Compute simulations to estimate the IC50 conf. interval
   pars <- cbind.data.frame(bottom=bottom, top=top, xmid=xmid, scal=scal, s=s)
   targets <- seq(.1, .9, by = .1)
-  estimates <- lapply(targets, function(target){.estimateRange(target, perf$stdErr, pars, 1e4)})
+  estimates <- lapply(targets, function(target){.estimateRange(target, perf$stdErr, pars, 1e4, object@isLog)})
   estimates <- cbind.data.frame(Resp = targets, do.call(rbind, estimates))
   colnames(estimates) <- c('Surv', 'Dmin', 'D', 'Dmax')
   

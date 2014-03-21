@@ -1,6 +1,7 @@
 # # Define class
 setClass('cellResp', representation(x='vector',
                                     y='vector',
+                                    isLog='logical',
                                     yProp='vector',
                                     npars='numeric',
                                     LPweight='numeric',
@@ -16,10 +17,10 @@ setClass('cellResp', representation(x='vector',
                                     SCE='ANY'))
 
 # # Constructor
-cellResp = function(x=x, y=y, yProp=NA, npars=0, LPweight=0, yFit=NA,
+cellResp = function(x=x, y=y, isLog=TRUE, yProp=NA, npars=0, LPweight=0, yFit=NA,
                     xCurve=NA, yCurve=NA, goodness=0, stdErr=0, pars=data.frame(),
                     estimates=data.frame(), AUC=data.frame(), PL=NULL, SCE=NULL){
-  new('cellResp', x=x, y=y, yProp=yProp, npars=npars, LPweight=LPweight,
+  new('cellResp', x=x, y=y, isLog=isLog, yProp=yProp, npars=npars, LPweight=LPweight,
       yFit=yFit, xCurve=xCurve, yCurve=yCurve, goodness=goodness, stdErr=stdErr,
       pars=pars, estimates=estimates, AUC = AUC, PL=PL, SCE=SCE)
 }
@@ -53,9 +54,18 @@ setMethod('getEstimates', 'cellResp', function(object){
   return(estim[order(estim$Surv, decreasing = TRUE),])
   })
 setMethod("getAUC", "cellResp", function(object) return(object@AUC))
+setMethod("predict", "cellResp", function(object, target){
+  if(target<0 | target>1)
+    stop("The target value has to be between 0 and 1 (fraction of y)")
+  pars <- getPar(object)
+  estim <- .estimateRange(target, getStdErr(object), pars$params, 1e4, object@isLog)
+  estim <- as.data.frame(t(estim))
+  colnames(estim) <- c('xmin', 'x', 'xmax')
+  return(estim)
+})
 setMethod("plot", signature = "cellResp",
           function(object, x=NA, y=NA, pcol="aquamarine1", lcol="red3", cex=1.5,
-                   showTarget=.5, showIC=TRUE, B=1e4, unit='µM',
+                   showTarget=.5, showIC=TRUE, B=1e4, unit='',
                    Title=NA, xlab='Log10(Drug[c])', ylab='Survival',...){
             op <- par(no.readonly = TRUE)
             par(las = 1, cex.axis = 1.5, cex.lab = 1.75, mar = c(6.5, 5.5, 4, 2), mgp = c(3.5, 1, 0))
@@ -69,43 +79,31 @@ setMethod("plot", signature = "cellResp",
             plot(x, y, col=pcol, cex=cex, pch=19, #ylim=range(min(newy, 0)-.05, max(newy, 1)+.05)*1.2,
                  xlab=xlab, ylab=ylab,...)
             points(x, y, pch = 1, cex = cex)
-            legend('topright', legend = paste('Goodness of fit:', r2adj), bty = 'n', cex = 1.5)
+            legend(ifelse(newy[length(newy)]<newx[length(newx)], 'topright', 'bottomright'),
+                   legend = paste('Goodness of fit:', r2adj), bty = 'n', cex = 1.5)
             
             if(!is.na(showTarget)){
               stdErr <- getStdErr(object)
-              estim <- .estimateRange(showTarget, stdErr, getPar(object)$params, B)
+              estim <- .estimateRange(showTarget, stdErr, getPar(object)$params, B, object@isLog)
               legend1 <- sprintf("IC%d : %s%s", showTarget*100, format(estim[2], scientific=TRUE), unit)
               legend2 <- sprintf("[%s, %s]", format(estim[1], scientific=TRUE), format(estim[3], scientific=TRUE))
-              legend('bottomleft', legend = c(legend1, legend2), cex = 1.5, text.col = 'steelblue4', bty = 'n')
+              legend(ifelse(newy[length(newy)]<newx[length(newx)], 'bottomleft', 'topleft'),
+                     legend = c(legend1, legend2), cex = 1.5, text.col = 'steelblue4', bty = 'n')
             }
             
             if(showIC){
-              #targets <- seq(min(y), max(y), len=20)
-              #bounds <- lapply(targets, function(target) .estimateRange(target, stdErr, pars=getPar(object), B))
-              bounds <- .IClm(getGoodness(object), getY(object), getFitValues(object), newy)
+              bounds <- .IClm(getStdErr(object), getY(object), getFitValues(object), newy)
               xx <- c(newx, rev(newx))
               yy <- c(bounds$lo, rev(bounds$hi))
-              polygon(xx, yy, border = NA, col = rgb(.8,.8,.8, .3))
-              
-#               ylo <- as.numeric(by(y, x, min))
-#               yhi <- as.numeric(by(y, x, max))
-#               f1 <- .fit(unique(x), ylo, object@npars, object@PL, object@SCE, object@LPweight)
-#               f2 <- .fit(unique(x), yhi, object@npars, object@PL, object@SCE, object@LPweight)
-#               lines(unique(x), f1); lines(unique(x), f2)
-#               Sd <- as.numeric(by(y, x, sd, na.rm=TRUE))
-#               pas <- (max(mx)-min(mx))/(length(mx)-1)/10
-#               lapply(1:length(Sd), function(i){
-#                 segments(x0 = mx[i], x1 = mx[i], y0 = my[i]-Sd[i], y1 = my[i]+Sd[i], lty = 2, lwd = 2)
-#                 segments(x0 = mx[i]-pas, x1 = mx[i]+pas, y0 = my[i]-Sd[i], y1 = my[i]-Sd[i], lty = 2, lwd = 2)
-#                 segments(x0 = mx[i]-pas, x1 = mx[i]+pas, y0 = my[i]+Sd[i], y1 = my[i]+Sd[i], lty = 2, lwd = 2)      
-#              })
-            }
+              polygon(xx, yy, border = NA, col = rgb(.8,.8,.8,.4))
+              }
             
             lines(newy ~ newx, col=lcol, lwd=4)#,...)
-            if(object@LPweight != 0)
+            if(object@LPweight != 0){
               Sub = sprintf("Weighted %s-P logistic regr. (DoseResp package, version v.1)", object@npars)
-            else 
+            } else{ 
               Sub = sprintf("Non-weighted %s-P logistic regr. (DoseResp package, version v.1)", object@npars)
+            }
             title (main = Title, sub = Sub, cex.sub = .75)
             par(op)
           }
