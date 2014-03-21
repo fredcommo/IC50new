@@ -77,9 +77,9 @@ setMethod("plot", signature = "cellResp",
             mx <- unique(x)
             r2adj <- round(getGoodness(object), 3)
             plot(x, y, col=pcol, cex=cex, pch=19, #ylim=range(min(newy, 0)-.05, max(newy, 1)+.05)*1.2,
-                 xlab=xlab, ylab=ylab,...)
+                 xlab=xlab, ylab=ylab)#,...)
             points(x, y, pch = 1, cex = cex)
-            legend(ifelse(newy[length(newy)]<newx[length(newx)], 'topright', 'bottomright'),
+            legend(ifelse(newy[length(newy)]<newy[1], 'topright', 'bottomright'),
                    legend = paste('Goodness of fit:', r2adj), bty = 'n', cex = 1.5)
             
             if(!is.na(showTarget)){
@@ -87,7 +87,7 @@ setMethod("plot", signature = "cellResp",
               estim <- .estimateRange(showTarget, stdErr, getPar(object)$params, B, object@isLog)
               legend1 <- sprintf("IC%d : %s%s", showTarget*100, format(estim[2], scientific=TRUE), unit)
               legend2 <- sprintf("[%s, %s]", format(estim[1], scientific=TRUE), format(estim[3], scientific=TRUE))
-              legend(ifelse(newy[length(newy)]<newx[length(newx)], 'bottomleft', 'topleft'),
+              legend(ifelse(newy[length(newy)]<newy[1], 'bottomleft', 'topleft'),
                      legend = c(legend1, legend2), cex = 1.5, text.col = 'steelblue4', bty = 'n')
             }
             
