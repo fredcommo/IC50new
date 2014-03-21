@@ -13,8 +13,8 @@ sourceRepoFile(git, Rlist)
 
 # demo1: no replicate
 set.seed(12345)
-bottom=0; top=1; xmid=(min(x) + max(x))/2; scal=-1; s=1
 x <- seq(log10(1e-3), log10(1.5), len=8)
+bottom=0; top=1; xmid=(min(x) + max(x))/2; scal=-1; s=1
 y <- .PL5(bottom, top, xmid, scal, s, x) + rnorm(length(x), 0, .05)
 
 test <- Logistic(x, y)
