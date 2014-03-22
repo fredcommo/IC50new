@@ -40,12 +40,12 @@ Logistic <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, useLog=TRUE, LPweight=0.
   scal <- best$estimate[4]
   s <- best$estimate[5]
   
-  # Estimation des valeurs
+  # Estimating values
   newX <- seq(min(x), max(x), length=200)
   newY <- PL(bottom, top, xmid, scal, s, newX)
   yFit <- PL(bottom, top, xmid, scal, s, x)
   perf <- .getPerf(y, yFit)
-  
+    
   # Compute simulations to estimate the IC50 conf. interval
   pars <- cbind.data.frame(bottom=bottom, top=top, xmid=xmid, scal=scal, s=s)
   targets <- seq(.1, .9, by = .1)
@@ -53,11 +53,15 @@ Logistic <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, useLog=TRUE, LPweight=0.
   estimates <- cbind.data.frame(Resp = targets, do.call(rbind, estimates))
   colnames(estimates) <- c('Surv', 'Dmin', 'D', 'Dmax')
   
+  # Inflexion point coordinates
+  infl <- .inflPoint(pars)
+
   object@npars <- npars
   object@pars <- pars
   object@yFit <- yFit
   object@xCurve <- newX
   object@yCurve <- newY
+  object@inflPoint <- infl
   object@goodness <- perf$goodness
   object@stdErr <- perf$stdErr
   object@estimates <- estimates

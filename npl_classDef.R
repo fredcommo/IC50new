@@ -1,27 +1,17 @@
 # # Define class
-setClass('npl', representation(x='vector',
-                                    y='vector',
-                                    useLog='logical',
-                                    yProp='vector',
-                                    npars='numeric',
-                                    LPweight='numeric',
-                                    yFit='vector',
-                                    xCurve='vector',
-                                    yCurve='vector',
-                                    goodness='numeric',
-                                    stdErr='numeric',
-                                    pars='data.frame',
-                                    estimates='data.frame',
-                                    AUC='data.frame',
-                                    PL='ANY',
-                                    SCE='ANY'))
+setClass('npl', representation(x='vector', y='vector', useLog='logical',
+                               yProp='vector', npars='numeric', LPweight='numeric',
+                               yFit='vector', xCurve='vector', yCurve='vector',
+                               inflPoint='data.frame', goodness='numeric', stdErr='numeric',
+                               pars='data.frame', estimates='data.frame', AUC='data.frame',
+                               PL='ANY', SCE='ANY'))
 
 # # Constructor
 .nplObj = function(x=x, y=y, useLog=TRUE, yProp=NA, npars=0, LPweight=0, yFit=NA,
-                    xCurve=NA, yCurve=NA, goodness=0, stdErr=0, pars=data.frame(),
+                    xCurve=NA, yCurve=NA, inflPoint=data.frame(), goodness=0, stdErr=0, pars=data.frame(),
                     estimates=data.frame(), AUC=data.frame(), PL=NULL, SCE=NULL){
   new('npl', x=x, y=y, useLog=useLog, yProp=yProp, npars=npars, LPweight=LPweight,
-      yFit=yFit, xCurve=xCurve, yCurve=yCurve, goodness=goodness, stdErr=stdErr,
+      yFit=yFit, xCurve=xCurve, yCurve=yCurve, inflPoint=inflPoint, goodness=goodness, stdErr=stdErr,
       pars=pars, estimates=estimates, AUC = AUC, PL=PL, SCE=SCE)
 }
 
@@ -33,6 +23,7 @@ setGeneric("getFitValues", function(object) standardGeneric("getFitValues"))
 setGeneric("getXcurve", function(object) standardGeneric("getXcurve"))
 setGeneric("getYcurve", function(object) standardGeneric("getYcurve"))
 setGeneric("getPar", function(object) standardGeneric("getPar"))
+setGeneric("getInflexion", function(object) standardGeneric("getInflexion"))
 setGeneric("getGoodness", function(object) standardGeneric("getGoodness"))
 setGeneric("getStdErr", function(object) standardGeneric("getStdErr"))
 setGeneric("getEstimates", function(object) standardGeneric("getEstimates"))
@@ -46,6 +37,7 @@ setMethod("getYProp", "npl", function(object) return(object@yProp))
 setMethod("getFitValues", "npl", function(object) return(object@yFit))
 setMethod("getXcurve", "npl", function(object) return(object@xCurve))
 setMethod("getYcurve", "npl", function(object) return(object@yCurve))
+setMethod("getInflexion", "npl", function(object) return(object@inflPoint))
 setMethod("getPar", "npl", function(object){return(list(npar=object@npars, params=object@pars))})
 setMethod('getGoodness', 'npl', function(object) return(object@goodness))
 setMethod('getStdErr', 'npl', function(object) return(object@stdErr))
@@ -65,7 +57,7 @@ setMethod("predict", "npl", function(object, target){
 })
 setMethod("plot", signature = "npl",
           function(object, x=NA, y=NA, pcol="aquamarine1", lcol="red3", cex=1.5,
-                   showTarget=.5, showGOF=TRUE, showIC=TRUE, B=1e4, unit='',
+                   showTarget=.5, showGOF=TRUE, showIC=TRUE, showInfl=FALSE, B=1e4, unit='',
                    Title=NA, xlab='Log10(Drug[c])', ylab='Survival',...){
             op <- par(no.readonly = TRUE)
             par(las = 1, cex.axis = 1.5, cex.lab = 1.75, mar = c(6.5, 5.5, 4, 2), mgp = c(3.5, 1, 0))
@@ -100,6 +92,9 @@ setMethod("plot", signature = "npl",
               yy <- c(bounds$lo, rev(bounds$hi))
               polygon(xx, yy, border = NA, col = rgb(.8,.8,.8,.4))
               }
+            
+            if(showInfl)
+              points(getInflexion(object), pch=19, cex=2, col="blue")
             
             lines(newy ~ newx, col=lcol, lwd=4)#,...)
             if(object@LPweight != 0){

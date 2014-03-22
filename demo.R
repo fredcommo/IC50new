@@ -48,9 +48,9 @@ bottom=1; top=100; xmid=(min(x) + max(x))/2; scal=.1; s=.5
 
 y <- .PL5(bottom, top, xmid, scal, s, x) + rnorm(n*replic, 5, 6)
 
-test <- Logistic(x, y, isProp=TRUE, useLog=FALSE)
+test <- Logistic(x, y, isProp=FALSE, useLog=FALSE)
 test
-plot(test, xlab = "Time (hrs)", ylab = "Proliferation")
+plot(test, xlab = "Time (hrs)", ylab = "Proliferation", showInfl=TRUE)
 predict(test, .25)
 getEstimates(test)
 getPar(test)

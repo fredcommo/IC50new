@@ -121,6 +121,11 @@
   pars <- best$estimate
   return(PL(pars[1], pars[2], pars[3], pars[4], pars[5], unique(x)))
 }
+.inflPoint <- function(pars){
+  x = pars$xmid + (1/pars$scal)*log10(pars$s)
+  y = pars$bottom + (pars$top - pars$bottom)*(pars$s/(pars$s+1))^pars$s
+  return(cbind.data.frame(x=x, y=y))
+}
 .getPerf <- function(y, yfit){
 #  y <- scale(y); yFit <- scale(yFit)
   lmtest <- summary(lm(y ~ yfit))
