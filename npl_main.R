@@ -1,5 +1,5 @@
 Logistic <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, useLog=TRUE, LPweight=0.25,
-                    npars="all", method=c("res", "sdw", "Y2", "pw", "gw"),...){
+                    npars="all", method=c("res", "sdw", "Y2", "pw", "gw"), B=1e4,...){
   
   method <- match.arg(method)
   
@@ -49,7 +49,7 @@ Logistic <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, useLog=TRUE, LPweight=0.
   # Compute simulations to estimate the IC50 conf. interval
   pars <- cbind.data.frame(bottom=bottom, top=top, xmid=xmid, scal=scal, s=s)
   targets <- seq(.1, .9, by = .1)
-  estimates <- lapply(targets, function(target){.estimateRange(target, perf$stdErr, pars, 1e4, object@useLog)})
+  estimates <- lapply(targets, function(target){.estimateRange(target, perf$stdErr, pars, B, object@useLog)})
   estimates <- cbind.data.frame(Resp = targets, do.call(rbind, estimates))
   colnames(estimates) <- c('Surv', 'Dmin', 'D', 'Dmax')
   

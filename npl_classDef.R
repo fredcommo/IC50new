@@ -46,13 +46,15 @@ setMethod('getEstimates', 'npl', function(object){
   return(estim[order(estim$Surv, decreasing = TRUE),])
   })
 setMethod("getAUC", "npl", function(object) return(object@AUC))
-setMethod("predict", "npl", function(object, target){
-  if(target<0 | target>1)
+setMethod("predict", "npl", function(object, targets, B=1e4){
+  if(any(targets<0 | targets>1))
     stop("The target value has to be between 0 and 1 (fraction of y)")
   pars <- getPar(object)
-  estim <- .estimateRange(target, getStdErr(object), pars$params, 1e4, object@useLog)
-  estim <- as.data.frame(t(estim))
-  colnames(estim) <- c('xmin', 'x', 'xmax')
+  estim <- lapply(targets, function(target)
+    .estimateRange(target, getStdErr(object), pars$params, B, object@useLog)
+                  )
+  estim <- cbind.data.frame(target=targets, do.call(rbind, estim))
+  colnames(estim)[-1] <- c('xmin', 'x', 'xmax')
   return(estim)
 })
 setMethod("plot", signature = "npl",

@@ -127,7 +127,6 @@
   return(cbind.data.frame(x=x, y=y))
 }
 .getPerf <- function(y, yfit){
-#  y <- scale(y); yFit <- scale(yFit)
   lmtest <- summary(lm(y ~ yfit))
   fstat <- lmtest$fstatistic
   p <- pf(fstat[1], fstat[2], fstat[3], lower.tail=FALSE)
@@ -192,14 +191,17 @@
   Xtarget = .invModel(pars, target)
   if(is.na(Xtarget)) Dmin <- D <- Dmax <- NA
   else{
+#    S <- sqrt(target*(1-target)/24)
     Ytmp <- target + rnorm(B, 0, stdErr)
-    if(any(Ytmp<=0)) Ytmp <- Ytmp[-Ytmp<=0]
-    estimate <- .invModel(pars, Ytmp)
-    Q <- quantile(estimate, probs=c(.025, .5, .975), na.rm=T)
-    if(useLog) Q <- 10^Q
-    Dmin <- signif(Q[1], 2)
-    D <- signif(Q[2], 2)
-    Dmax <- signif(Q[3], 2)
+#    Ytmp <- target + rnorm(B, 0, S)
+    if(any(Ytmp<=pars$bottom)) Ytmp <- Ytmp[-which(Ytmp<=pars$bottom)]
+    if(any(Ytmp>=pars$top)) Ytmp <- Ytmp[-which(Ytmp>=pars$top)]
+    Q <- quantile(Ytmp, probs=c(.05, .95), na.rm=T)
+    estimates <- .invModel(pars, c(Q[1], target, Q[2]))
+    if(useLog) estimates <- 10^estimates
+    Dmin <- signif(min(estimates), 2)
+    D <- signif(estimates[2], 2)
+    Dmax <- signif(max(estimates), 2)
   }
   return(as.numeric(c(Dmin, D, Dmax)))
 }
