@@ -65,7 +65,7 @@ setMethod("predict", "npl", function(object, target){
 })
 setMethod("plot", signature = "npl",
           function(object, x=NA, y=NA, pcol="aquamarine1", lcol="red3", cex=1.5,
-                   showTarget=.5, showIC=TRUE, B=1e4, unit='',
+                   showTarget=.5, showGOF=TRUE, showIC=TRUE, B=1e4, unit='',
                    Title=NA, xlab='Log10(Drug[c])', ylab='Survival',...){
             op <- par(no.readonly = TRUE)
             par(las = 1, cex.axis = 1.5, cex.lab = 1.75, mar = c(6.5, 5.5, 4, 2), mgp = c(3.5, 1, 0))
@@ -79,10 +79,13 @@ setMethod("plot", signature = "npl",
             plot(x, y, col=pcol, cex=cex, pch=19, #ylim=range(min(newy, 0)-.05, max(newy, 1)+.05)*1.2,
                  xlab=xlab, ylab=ylab)#,...)
             points(x, y, pch = 1, cex = cex)
-            legend(ifelse(newy[length(newy)]<newy[1], 'topright', 'bottomright'),
-                   legend = paste('Goodness of fit:', r2adj), bty = 'n', cex = 1.5)
             
-            if(!is.na(showTarget)){
+            if(showGOF)
+              legend(ifelse(newy[length(newy)]<newy[1], 'topright', 'bottomright'),
+                     legend = paste('Goodness of fit:', r2adj), bty = 'n', cex = 1.5)
+            
+#            if(!is.na(showTarget)){
+            if(!(!showTarget)){
               stdErr <- getStdErr(object)
               estim <- .estimateRange(showTarget, stdErr, getPar(object)$params, B, object@isLog)
               legend1 <- sprintf("IC%d : %s%s", showTarget*100, format(estim[2], scientific=TRUE), unit)
