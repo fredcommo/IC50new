@@ -1,4 +1,4 @@
-Logistic <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, isLog=TRUE, LPweight=0.25,
+Logistic <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, useLog=TRUE, LPweight=0.25,
                     npars="all", method=c("res", "sdw", "Y2", "pw", "gw"),...){
   
   method <- match.arg(method)
@@ -12,7 +12,8 @@ Logistic <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, isLog=TRUE, LPweight=0.2
     x <- x[-NAs]
     y <- y[-NAs]
   }
-  object <- .nplObj(x=x, y=y, isLog=isLog, LPweight=LPweight)
+  if(useLog) x <- log10(x)
+  object <- .nplObj(x=x, y=y, useLog=useLog, LPweight=LPweight)
   
   if(!isProp){
     object@yProp <- .survProp(y, T0, Ctrl)
@@ -48,7 +49,7 @@ Logistic <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, isLog=TRUE, LPweight=0.2
   # Compute simulations to estimate the IC50 conf. interval
   pars <- cbind.data.frame(bottom=bottom, top=top, xmid=xmid, scal=scal, s=s)
   targets <- seq(.1, .9, by = .1)
-  estimates <- lapply(targets, function(target){.estimateRange(target, perf$stdErr, pars, 1e4, object@isLog)})
+  estimates <- lapply(targets, function(target){.estimateRange(target, perf$stdErr, pars, 1e4, object@useLog)})
   estimates <- cbind.data.frame(Resp = targets, do.call(rbind, estimates))
   colnames(estimates) <- c('Surv', 'Dmin', 'D', 'Dmax')
   

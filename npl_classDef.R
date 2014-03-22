@@ -1,7 +1,7 @@
 # # Define class
 setClass('npl', representation(x='vector',
                                     y='vector',
-                                    isLog='logical',
+                                    useLog='logical',
                                     yProp='vector',
                                     npars='numeric',
                                     LPweight='numeric',
@@ -17,10 +17,10 @@ setClass('npl', representation(x='vector',
                                     SCE='ANY'))
 
 # # Constructor
-.nplObj = function(x=x, y=y, isLog=TRUE, yProp=NA, npars=0, LPweight=0, yFit=NA,
+.nplObj = function(x=x, y=y, useLog=TRUE, yProp=NA, npars=0, LPweight=0, yFit=NA,
                     xCurve=NA, yCurve=NA, goodness=0, stdErr=0, pars=data.frame(),
                     estimates=data.frame(), AUC=data.frame(), PL=NULL, SCE=NULL){
-  new('npl', x=x, y=y, isLog=isLog, yProp=yProp, npars=npars, LPweight=LPweight,
+  new('npl', x=x, y=y, useLog=useLog, yProp=yProp, npars=npars, LPweight=LPweight,
       yFit=yFit, xCurve=xCurve, yCurve=yCurve, goodness=goodness, stdErr=stdErr,
       pars=pars, estimates=estimates, AUC = AUC, PL=PL, SCE=SCE)
 }
@@ -58,7 +58,7 @@ setMethod("predict", "npl", function(object, target){
   if(target<0 | target>1)
     stop("The target value has to be between 0 and 1 (fraction of y)")
   pars <- getPar(object)
-  estim <- .estimateRange(target, getStdErr(object), pars$params, 1e4, object@isLog)
+  estim <- .estimateRange(target, getStdErr(object), pars$params, 1e4, object@useLog)
   estim <- as.data.frame(t(estim))
   colnames(estim) <- c('xmin', 'x', 'xmax')
   return(estim)
@@ -87,7 +87,7 @@ setMethod("plot", signature = "npl",
 #            if(!is.na(showTarget)){
             if(!(!showTarget)){
               stdErr <- getStdErr(object)
-              estim <- .estimateRange(showTarget, stdErr, getPar(object)$params, B, object@isLog)
+              estim <- .estimateRange(showTarget, stdErr, getPar(object)$params, B, object@useLog)
               legend1 <- sprintf("IC%d : %s%s", showTarget*100, format(estim[2], scientific=TRUE), unit)
               legend2 <- sprintf("[%s, %s]", format(estim[1], scientific=TRUE), format(estim[3], scientific=TRUE))
               legend(ifelse(newy[length(newy)]<newy[1], 'bottomleft', 'topleft'),

@@ -98,6 +98,7 @@
   z[z==0] <- 0.05; z[z==1] <- 0.95
   lz <- log(z/(1-z))
   scal <- coef(lm(x ~ lz))[2]
+  if(scal>1) scal <- 1/scal
   return(as.numeric(scal))
 }
 .initPars <- function(x, y, npars){
@@ -181,7 +182,7 @@
 #     target[target<=pars$bottom] <- pars$bottom + abs(pars$bottom*.01)
   return(pars$xmid - 1/pars$scal*log10(((pars$top - pars$bottom)/(target - pars$bottom))^(1/pars$s)-1))
 }
-.estimateRange <- function(target, stdErr, pars, B, isLog){
+.estimateRange <- function(target, stdErr, pars, B, useLog){
   target <- pars$bottom + (pars$top - pars$bottom)*target
   Xtarget = .invModel(pars, target)
   if(is.na(Xtarget)) Dmin <- D <- Dmax <- NA
@@ -190,7 +191,7 @@
     if(any(Ytmp<=0)) Ytmp <- Ytmp[-Ytmp<=0]
     estimate <- .invModel(pars, Ytmp)
     Q <- quantile(estimate, probs=c(.025, .5, .975), na.rm=T)
-    if(isLog) Q <- 10^Q
+    if(useLog) Q <- 10^Q
     Dmin <- signif(Q[1], 2)
     D <- signif(Q[2], 2)
     Dmax <- signif(Q[3], 2)
