@@ -21,6 +21,7 @@ y <- .PL5(bottom, top, xmid, scal, s, log10(x)) + rnorm(n, 0, .05)
 test <- Logistic(x, y)
 test
 plot(test)
+getAUC(test)
 getEstimates(test)
 getPar(test)
 predict(test, c(.25, .5, .75))
@@ -50,12 +51,13 @@ segments(x0=estims$Surv, y0=estims$Dmin, y1=estims$Dmax)
 set.seed(12346)
 n = 8; replic = 3
 x <- rep(seq(1, 48, len=n), replic)
-bottom=1; top=100; xmid=(min(x) + max(x))/2; scal=.1; s=.5
+bottom=0; top=1; xmid=(min(x) + max(x))/2; scal=0.1; s=.5
 
-y <- .PL5(bottom, top, xmid, scal, s, x) + rnorm(n*replic, 5, 6)
+y <- .PL5(bottom, top, xmid, scal, s, x) + rnorm(n*replic, 0, .05)
 
 test <- Logistic(x, y, isProp=FALSE, useLog=FALSE)
 test
 
-plot(test, xlab = "Time (hrs)", ylab = "Proliferation", showInfl=TRUE)
+plot(test, xlab = "Time (hrs)", ylab = "Proliferation", showInfl=TRUE, showTarget=FALSE)
 getInflexion(test)
+predict(test, c(.1, .25, .5))
