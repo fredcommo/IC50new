@@ -187,7 +187,7 @@
   return(pars$xmid - 1/pars$scal*log10(((pars$top - pars$bottom)/(target - pars$bottom))^(1/pars$s)-1))
 }
 .estimateRange <- function(target, stdErr, pars, B, useLog){
-  target <- pars$bottom + (pars$top - pars$bottom)*target
+#  target <- pars$bottom + (pars$top - pars$bottom)*target
   Xtarget = .invModel(pars, target)
   if(is.na(Xtarget)) Dmin <- D <- Dmax <- NA
   else{
