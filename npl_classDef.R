@@ -1,5 +1,5 @@
 # # Define class
-setClass('npl', representation(x='vector', y='vector', useLog='logical',
+setClass('nplm', representation(x='vector', y='vector', useLog='logical',
                                yProp='vector', npars='numeric', LPweight='numeric',
                                yFit='vector', xCurve='vector', yCurve='vector',
                                inflPoint='data.frame', goodness='numeric', stdErr='numeric',
@@ -7,10 +7,10 @@ setClass('npl', representation(x='vector', y='vector', useLog='logical',
                                PL='ANY', SCE='ANY'))
 
 # # Constructor
-.nplObj = function(x=x, y=y, useLog=TRUE, yProp=NA, npars=0, LPweight=0, yFit=NA,
+.nplmObj = function(x=x, y=y, useLog=TRUE, yProp=NA, npars=0, LPweight=0, yFit=NA,
                     xCurve=NA, yCurve=NA, inflPoint=data.frame(), goodness=0, stdErr=0, pars=data.frame(),
                     estimates=data.frame(), AUC=data.frame(), PL=NULL, SCE=NULL){
-  new('npl', x=x, y=y, useLog=useLog, yProp=yProp, npars=npars, LPweight=LPweight,
+  new('nplm', x=x, y=y, useLog=useLog, yProp=yProp, npars=npars, LPweight=LPweight,
       yFit=yFit, xCurve=xCurve, yCurve=yCurve, inflPoint=inflPoint, goodness=goodness, stdErr=stdErr,
       pars=pars, estimates=estimates, AUC = AUC, PL=PL, SCE=SCE)
 }
@@ -28,36 +28,36 @@ setGeneric("getGoodness", function(object) standardGeneric("getGoodness"))
 setGeneric("getStdErr", function(object) standardGeneric("getStdErr"))
 setGeneric("getEstimates", function(object) standardGeneric("getEstimates"))
 setGeneric("getAUC", function(object) standardGeneric("getAUC"))
-#setGeneric("show", valueClass="npl", function(object) standardGeneric("show"))
+#setGeneric("show", valueClass="nplm", function(object) standardGeneric("show"))
 
 # # Methods
-setMethod("getX", "npl", function(object) return(object@x))
-setMethod("getY", "npl", function(object) return(object@y))
-setMethod("getYProp", "npl", function(object) return(object@yProp))
-setMethod("getFitValues", "npl", function(object) return(object@yFit))
-setMethod("getXcurve", "npl", function(object) return(object@xCurve))
-setMethod("getYcurve", "npl", function(object) return(object@yCurve))
-setMethod("getInflexion", "npl", function(object) return(object@inflPoint))
-setMethod("getPar", "npl", function(object){return(list(npar=object@npars, params=object@pars))})
-setMethod('getGoodness', 'npl', function(object) return(object@goodness))
-setMethod('getStdErr', 'npl', function(object) return(object@stdErr))
-setMethod('getEstimates', 'npl', function(object){
+setMethod("getX", "nplm", function(object) return(object@x))
+setMethod("getY", "nplm", function(object) return(object@y))
+setMethod("getYProp", "nplm", function(object) return(object@yProp))
+setMethod("getFitValues", "nplm", function(object) return(object@yFit))
+setMethod("getXcurve", "nplm", function(object) return(object@xCurve))
+setMethod("getYcurve", "nplm", function(object) return(object@yCurve))
+setMethod("getInflexion", "nplm", function(object) return(object@inflPoint))
+setMethod("getPar", "nplm", function(object){return(list(npar=object@npars, params=object@pars))})
+setMethod('getGoodness', 'nplm', function(object) return(object@goodness))
+setMethod('getStdErr', 'nplm', function(object) return(object@stdErr))
+setMethod('getEstimates', 'nplm', function(object){
   estim <- object@estimates
-  return(estim[order(estim$Surv, decreasing = TRUE),])
+  return(estim[order(estim$Prop, decreasing = TRUE),])
   })
-setMethod("getAUC", "npl", function(object) return(object@AUC))
-setMethod("predict", "npl", function(object, targets, B=1e4){
+setMethod("getAUC", "nplm", function(object) return(object@AUC))
+setMethod("predict", "nplm", function(object, targets, B=1e4){
   if(any(targets<0 | targets>1))
     stop("The target value has to be between 0 and 1 (fraction of y)")
   pars <- getPar(object)
   estim <- lapply(targets, function(target)
     .estimateRange(target, getStdErr(object), pars$params, B, object@useLog)
                   )
-  estim <- cbind.data.frame(target=targets, do.call(rbind, estim))
+  estim <- cbind.data.frame(prop=targets, do.call(rbind, estim))
   colnames(estim)[-1] <- c('xmin', 'x', 'xmax')
   return(estim)
 })
-setMethod("plot", signature = "npl",
+setMethod("plot", signature = "nplm",
           function(object, x=NA, y=NA, pcol="aquamarine1", lcol="red3", cex=1.5,
                    showTarget=.5, showGOF=TRUE, showIC=TRUE, showInfl=FALSE, B=1e4, unit='',
                    Title=NA, xlab='Log10(Drug[c])', ylab='Survival',...){
@@ -109,9 +109,9 @@ setMethod("plot", signature = "npl",
           }
 )
 
-setMethod('show', 'npl',
+setMethod('show', 'nplm',
           function(object){
-            cat("Instance of class npl\n")
+            cat("Instance of class nplm\n")
             cat("\n")
             cat(sprintf("%s-P logistic model\n", object@npars))
             cat("Goodness of fit:", getGoodness(object), "\n")

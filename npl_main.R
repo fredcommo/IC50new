@@ -13,7 +13,7 @@ Logistic <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, useLog=TRUE, LPweight=0.
     y <- y[-NAs]
   }
   if(useLog) x <- log10(x)
-  object <- .nplObj(x=x, y=y, useLog=useLog, LPweight=LPweight)
+  object <- .nplmObj(x=x, y=y, useLog=useLog, LPweight=LPweight)
   
   if(!isProp){
     object@yProp <- .survProp(y, T0, Ctrl)
@@ -26,7 +26,7 @@ Logistic <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, useLog=TRUE, LPweight=0.
   
   if(npars=="all"){
     npars <- .testAll(.sce, x, y, weights, LPweight)
-    cat(sprintf("%s-Parameters model seems to have better performances.\n", npars))
+    cat(sprintf("%s-Parameters model seems to have better performance.\n", npars))
   }
   
   PL <- .chooseModel(npars)
@@ -51,7 +51,7 @@ Logistic <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, useLog=TRUE, LPweight=0.
   targets <- seq(.1, .9, by = .1)
   estimates <- lapply(targets, function(target){.estimateRange(target, perf$stdErr, pars, B, object@useLog)})
   estimates <- cbind.data.frame(Resp = targets, do.call(rbind, estimates))
-  colnames(estimates) <- c('Surv', 'Dmin', 'D', 'Dmax')
+  colnames(estimates) <- c('Prop', 'xmin', 'x', 'xmax')
   
   # Inflexion point coordinates
   infl <- .inflPoint(pars)
