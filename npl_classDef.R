@@ -71,7 +71,7 @@ setMethod("plot", signature = "nplm",
             mx <- unique(x)
             r2adj <- round(getGoodness(object), 3)
             plot(x, y, col=pcol, cex=cex, pch=19, #ylim=range(min(newy, 0)-.05, max(newy, 1)+.05)*1.2,
-                 xlab=xlab, ylab=ylab)#,...)
+                 xlab=xlab, ylab=ylab,...)
             points(x, y, pch = 1, cex = cex)
             
             if(showGOF)
