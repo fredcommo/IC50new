@@ -1,4 +1,4 @@
-Logistic <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, useLog=TRUE, LPweight=0.25,
+nplm <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, useLog=TRUE, LPweight=0.25,
                     npars="all", method=c("res", "sdw", "Y2", "pw", "gw"), B=1e4,...){
   
   method <- match.arg(method)
