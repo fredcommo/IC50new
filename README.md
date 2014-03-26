@@ -1,3 +1,6 @@
+[newloc]: https://github.com/fredcommo/nplogistic
+> This repository will not be updated: see [newloc] for new developments.
+
 [Example]: https://github.com/fredcommo/IC50new/blob/master/example.png
 # IC50 
 ##[Example]
