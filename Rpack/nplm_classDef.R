@@ -4,15 +4,15 @@ setClass('nplm', representation(x='vector', y='vector', useLog='logical',
                                yFit='vector', xCurve='vector', yCurve='vector',
                                inflPoint='data.frame', goodness='numeric', stdErr='numeric',
                                pars='data.frame', estimates='data.frame', AUC='data.frame',
-                               PL='ANY', SCE='ANY'))
+                               nPL='ANY', SCE='ANY'))
 
 # # Constructor
 .nplmObj = function(x=x, y=y, useLog=TRUE, yProp=NA, npars=0, LPweight=0, yFit=NA,
                     xCurve=NA, yCurve=NA, inflPoint=data.frame(), goodness=0, stdErr=0, pars=data.frame(),
-                    estimates=data.frame(), AUC=data.frame(), PL=NULL, SCE=NULL){
+                    estimates=data.frame(), AUC=data.frame(), nPL=NULL, SCE=NULL){
   new('nplm', x=x, y=y, useLog=useLog, yProp=yProp, npars=npars, LPweight=LPweight,
       yFit=yFit, xCurve=xCurve, yCurve=yCurve, inflPoint=inflPoint, goodness=goodness, stdErr=stdErr,
-      pars=pars, estimates=estimates, AUC = AUC, PL=PL, SCE=SCE)
+      pars=pars, estimates=estimates, AUC = AUC, nPL=nPL, SCE=SCE)
 }
 
 # # setGenerics

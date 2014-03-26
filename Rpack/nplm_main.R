@@ -1,17 +1,19 @@
 nplm <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, useLog=TRUE, LPweight=0.25,
-                    npars="all", method=c("res", "sdw", "Y2", "pw", "gw"), B=1e4,...){
+                    npars="all", method=c("res", "sdw", "gw", "Y2", "pw"), B=1e4,...){
   
   method <- match.arg(method)
   
   if(is.numeric(npars) & (npars<2 | npars>5))
-    stop("\nThe number of parameters (npars) has to be in [2, 5]!\n
-         Choose 'all' to test both.\n")
+    stop("\nThe number of parameters (npars) has to be in {2, 5}, or 'all'!\n")
     
   if(any(is.na(x) | is.na(y))){
     NAs <- union(which(is.na(x)), which(is.na(y)))
     x <- x[-NAs]
     y <- y[-NAs]
   }
+  y <- y[order(x)]
+  x <- sort(x)
+  
   if(useLog) x <- log10(x)
   object <- .nplmObj(x=x, y=y, useLog=useLog, LPweight=LPweight)
   
@@ -29,9 +31,9 @@ nplm <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, useLog=TRUE, LPweight=0.25,
     cat(sprintf("%s-Parameters model seems to have better performance.\n", npars))
   }
   
-  PL <- .chooseModel(npars)
+  nPL <- .chooseModel(npars)
   inits <- .initPars(x, y, npars)
-  best <- nlm(f=.sce, p=inits, x=x, yobs=y, Weights=weights, wcoef=LPweight, PL)
+  best <- nlm(f=.sce, p=inits, x=x, yobs=y, Weights=weights, wcoef=LPweight, nPL)
   
   # Best estimates
   bottom <- best$estimate[1]
@@ -42,8 +44,8 @@ nplm <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, useLog=TRUE, LPweight=0.25,
   
   # Estimating values
   newX <- seq(min(x), max(x), length=200)
-  newY <- PL(bottom, top, xmid, scal, s, newX)
-  yFit <- PL(bottom, top, xmid, scal, s, x)
+  newY <- nPL(bottom, top, xmid, scal, s, newX)
+  yFit <- nPL(bottom, top, xmid, scal, s, x)
   perf <- .getPerf(y, yFit)
     
   # Compute simulations to estimate the IC50 conf. interval
@@ -66,7 +68,7 @@ nplm <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, useLog=TRUE, LPweight=0.25,
   object@stdErr <- perf$stdErr
   object@estimates <- estimates
   object@AUC <- data.frame(trapezoide = .AUC(newX, newY), Simpson = .Simpson(newX, newY))
-  object@PL <- PL
+  object@nPL <- nPL
   object@SCE <- .sce
 
   return(object)
