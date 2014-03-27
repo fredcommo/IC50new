@@ -1,5 +1,5 @@
-nplm <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, useLog=TRUE, LPweight=0.25,
-                    npars="all", method=c("res", "sdw", "gw", "Y2", "pw"), B=1e4,...){
+nplm <- function(x, y, useLog=TRUE, LPweight=0.25, npars="all",
+                 method=c("res", "sdw", "gw", "Y2", "pw"), B=1e4,...){
   
   method <- match.arg(method)
   
@@ -17,11 +17,11 @@ nplm <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, useLog=TRUE, LPweight=0.25,
   if(useLog) x <- log10(x)
   object <- .nplmObj(x=x, y=y, useLog=useLog, LPweight=LPweight)
   
-  if(!isProp){
-    object@yProp <- .survProp(y, T0, Ctrl)
-  } else {
-    object@yProp <- y
-  }
+#   if(!isProp){
+#     object@yProp <- .survProp(y, T0, Ctrl)
+#   } else {
+#     object@yProp <- y
+#   }
   
   weights <- rep(1, length(y))
   .sce <- .chooseSCE(method)
@@ -50,10 +50,12 @@ nplm <- function(x, y, T0=NA, Ctrl=NA, isProp=TRUE, useLog=TRUE, LPweight=0.25,
     
   # Compute simulations to estimate the IC50 conf. interval
   pars <- cbind.data.frame(bottom=bottom, top=top, xmid=xmid, scal=scal, s=s)
-  targets <- seq(.1, .9, by = .1)
+#  targets <- seq(.1, .9, by = .1)
+#  targets <- seq(top*(1 - 1e-1), bottom*(1 + 1e-1), len=10)
+  targets <- unique(yFit)
   estimates <- lapply(targets, function(target){.estimateRange(target, perf$stdErr, pars, B, object@useLog)})
   estimates <- cbind.data.frame(Resp = targets, do.call(rbind, estimates))
-  colnames(estimates) <- c('Prop', 'xmin', 'x', 'xmax')
+  colnames(estimates) <- c('y', 'xmin', 'x', 'xmax')
   
   # Inflexion point coordinates
   infl <- .inflPoint(pars)
